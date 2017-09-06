@@ -14,11 +14,11 @@ public class Animation extends JPanel {
 
     final int frameCount = 10;
     int picNum = 0;
-    BufferedImage[][] pics;
+    BufferedImage[][]pics;
     int xloc = 0;
     int yloc = 0;
     int xIncr = 8;
-    int yIncr = 2;
+    int yIncr = 4;
     final static int frameWidth = 500;
     final static int frameHeight = 300;
     final static int imgWidth = 165;
@@ -27,28 +27,44 @@ public class Animation extends JPanel {
 
     //Override this JPanel's paint method to cycle through picture array and draw images
     public void paint(Graphics g) {
-	    	picNum = (picNum + 1) % frameCount;
-	    	
-	    	if ((xloc + xIncr + imgWidth > frameWidth) || (xloc + xIncr + imgWidth/2 < 0)){
-	    		xIncr = -xIncr;
-	    	}
-	    	if ((yloc + yIncr + imgHeight > frameHeight) || (yloc + yIncr + imgHeight/2 < 0)){
-	    		yIncr = -yIncr;
-	    	}
-	    	
-	    	if (xIncr > 0 && yIncr > 0) {
-	    		direction = 0;
-	    	}
-	    	else if(xIncr < 0 && yIncr > 0) {
-	    		direction = 1;
-	    	}
-	    	else if(xIncr > 0 && yIncr < 0) {
-	    		direction = 2;
-	    	}
-	    	else if(xIncr < 0 && yIncr < 0) {
-	    		direction = 3;
-	    	}
-		g.drawImage(pics[direction][picNum], xloc+=xIncr, yloc+=yIncr, Color.gray, this);
+    	g.drawImage(pics[picNum][direction], xloc, yloc, Color.gray, this);
+    	
+    	picNum = (picNum + 1) % frameCount;
+    	
+    	if ((xloc + xIncr + imgWidth > frameWidth) || (xloc + xIncr < 0)){
+    		xIncr = -xIncr;
+    	}
+    	if ((yloc + yIncr + imgHeight > frameHeight) || (yloc + yIncr < 0)){
+    		yIncr = -yIncr;
+    	}
+    	
+    	if (xIncr == 0 && yIncr > 0) {
+    		direction = 0;
+    	}
+    	if (xIncr > 0 && yIncr > 0) {
+    		direction = 1;
+    	}
+    	if (xIncr > 0 && yIncr == 0) {
+    		direction = 2;
+    	}
+    	if (xIncr > 0 && yIncr < 0) {
+    		direction = 3;
+    	}
+    	if (xIncr == 0 && yIncr < 0) {
+    		direction = 4;
+    	}
+    	if (xIncr < 0 && yIncr < 0) {
+    		direction = 5;
+    	}
+    	if (xIncr < 0 && yIncr == 0) {
+    		direction = 6;
+    	}
+    	if (xIncr < 0 && yIncr > 0) {
+    		direction = 7;
+    	}
+    		
+    	xloc += xIncr;
+    	yloc += yIncr;
 
     	// TODO: Keep the orc from walking off-screen, turn around when bouncing off walls.
 	//Be sure that animation picture direction matches what is happening on screen.
@@ -56,38 +72,38 @@ public class Animation extends JPanel {
 
     //Make frame, loop on repaint and wait
     public static void main(String[] args) {
-	    	JFrame frame = new JFrame();
-	    	frame.getContentPane().add(new Animation());
-	    	frame.setBackground(Color.gray);
-	    	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    	frame.setSize(frameWidth, frameHeight);
-	    	frame.setVisible(true);
-	    	for(int i = 0; i < 1000; i++){
-	    		frame.repaint();
-	    		try {
-	    			Thread.sleep(100);
-	    		} catch (InterruptedException e) {
-	    			e.printStackTrace();
-	    		}
-	    	}
+    	JFrame frame = new JFrame();
+    	frame.getContentPane().add(new Animation());
+    	frame.setBackground(Color.gray);
+    	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    	frame.setSize(frameWidth, frameHeight);
+    	frame.setVisible(true);
+    	for(int i = 0; i < 1000; i++){
+    		frame.repaint();
+    		try {
+    			Thread.sleep(100);
+    		} catch (InterruptedException e) {
+    			e.printStackTrace();
+    		}
+    	}
     }
 
     //Constructor: get image, segment and store in array
     public Animation(){
-    	String[] paths = {"images/orcs/orc_forward_southeast.png", 
-    			"images/orcs/orc_forward_southwest.png", 
-    			"images/orcs/orc_forward_northeast.png",
-    			"images/orcs/orc_forward_northwest.png",
-    			"images/orcs/orc_forward_south.png",
-    			"images/orcs/orc_forward_north.png",
-    			"images/orcs/orc_forward_east.png",
-    			"images/orcs/orc_forward_west.png"};
-    	
-    	pics = new BufferedImage[8][10];
-    	for(int j = 0; j < pics.length; j++) {
-    		BufferedImage img = createImage(paths[j]);
-	    	for(int i = 0; i < frameCount; i++)
-	    		pics[j][i] = img.getSubimage(imgWidth*i, 0, imgWidth, imgHeight);
+    	String[] paths = {"images/orc/orc_forward_south.png", 
+    			"images/orc/orc_forward_southeast.png", 
+    			"images/orc/orc_forward_east.png",
+    			"images/orc/orc_forward_northeast.png",
+    			"images/orc/orc_forward_north.png",
+    			"images/orc/orc_forward_northwest.png",
+    			"images/orc/orc_forward_west.png",
+    			"images/orc/orc_forward_southwest.png"};
+    	pics = new BufferedImage[frameCount][8];
+		for(int dir = 0; dir < 8; dir++) {
+			BufferedImage img = createImage(paths[dir]);
+			for(int i = 0; i < frameCount; i++) {
+				pics[i][dir] = img.getSubimage(imgWidth*i, 0, imgWidth, imgHeight);
+    		}
     	}
     	
     	// TODO: Change this constructor so that at least eight orc animation pngs are loaded
