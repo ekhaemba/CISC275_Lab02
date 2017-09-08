@@ -15,64 +15,110 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+
 public class Animation extends JPanel {
 
+	enum Velocity { UNDEF, NEGATIVE, ZERO, POSITIVE }
     final int frameCount = 10;
     int picNum = 0;
     BufferedImage[][]pics;
     int xloc = 0;
     int yloc = 0;
-    int xIncr = 8;
-    int yIncr = 4;
+    final int xIncr = 8;
+    final int yIncr = 4;
     final static int frameWidth = 500;
     final static int frameHeight = 300;
     final static int imgWidth = 165;
     final static int imgHeight = 165;
     Map<String, Integer> direction = new HashMap<String, Integer>();
     String directionKey;
+    Velocity xVel = Velocity.UNDEF;
+    Velocity yVel = Velocity.UNDEF;
     
-
     //Override this JPanel's paint method to cycle through picture array and draw images
+    private void setDirection() {
+		if (xVel == Velocity.ZERO && yVel == Velocity.POSITIVE) {
+			directionKey = "South";
+		}
+		if (xVel == Velocity.POSITIVE && yVel == Velocity.POSITIVE) {
+			directionKey = "SouthEast";
+		}
+		if (xVel == Velocity.POSITIVE && yVel == Velocity.ZERO) {
+			directionKey = "East";
+		}
+		if (xVel == Velocity.POSITIVE && yVel == Velocity.NEGATIVE) {
+			directionKey = "NorthEast";
+		}
+		if (xVel == Velocity.ZERO && yVel == Velocity.NEGATIVE) {
+			directionKey = "North";
+		}
+		if (xVel == Velocity.NEGATIVE && yVel == Velocity.NEGATIVE) {
+			directionKey = "NorthWest";
+		}
+		if (xVel == Velocity.NEGATIVE && yVel == Velocity.ZERO) {
+			directionKey = "West";
+		}
+		if (xVel == Velocity.NEGATIVE && yVel == Velocity.POSITIVE) {
+			directionKey = "SouthWest";
+		}
+    }
+    private Velocity setInitialVel(int vel) {
+    		if(vel == 0) {
+    			return Velocity.ZERO;
+    		}
+    		else if(vel < 0) {
+    			return Velocity.NEGATIVE;
+    		}
+    		else {
+    			return Velocity.POSITIVE;
+    		}
+    }
+    
+    private int getVelocityVal(Velocity v, int velVal) {
+    		switch(v) {
+			case POSITIVE:
+				return velVal;
+			case NEGATIVE:
+				return -velVal;
+			default:
+				return 0;
+    		}
+    }
+    
+    //Sets the next velocity 
+    private void setNextVelocity() {
+    		if(xVel != Velocity.ZERO) {
+	    		int next_x = xloc + getVelocityVal(xVel, xIncr);
+		    	if ((next_x + imgWidth > frameWidth) || (next_x < 0)){
+		    		xVel = xVel == Velocity.POSITIVE ? Velocity.NEGATIVE : Velocity.POSITIVE;
+		    	}
+	    	}
+    		if(yVel != Velocity.ZERO) {
+		    	int next_y = yloc + getVelocityVal(yVel, yIncr);
+		    	if ((next_y + imgHeight > frameHeight) || (next_y < 0)){
+		    		yVel = yVel == Velocity.POSITIVE  ? Velocity.NEGATIVE : Velocity.POSITIVE;
+		    	}
+	    	}
+    }
+    //Sets the next location of the orc
+    private void setNextLoc() {
+    		xloc += getVelocityVal(xVel,xIncr);
+    		yloc += getVelocityVal(yVel,yIncr);
+    }
     public void paint(Graphics g) {
     	
+    	//Initial State
+    	if(xVel == Velocity.UNDEF && yVel == Velocity.UNDEF) {
+    		xVel = setInitialVel(xIncr);
+    		yVel = setInitialVel(yIncr);
+    	}
     	picNum = (picNum + 1) % frameCount;
-    	
-    	if ((xloc + xIncr + imgWidth > frameWidth) || (xloc + xIncr < 0)){
-    		xIncr = -xIncr;
-    	}
-    	if ((yloc + yIncr + imgHeight > frameHeight) || (yloc + yIncr < 0)){
-    		yIncr = -yIncr;
-    	}
-    	
-    	if (xIncr == 0 && yIncr > 0) {
-    		directionKey = "South";
-    	}
-    	if (xIncr > 0 && yIncr > 0) {
-    		directionKey = "SouthEast";
-    	}
-    	if (xIncr > 0 && yIncr == 0) {
-    		directionKey = "East";
-    	}
-    	if (xIncr > 0 && yIncr < 0) {
-    		directionKey = "NorthEast";
-    	}
-    	if (xIncr == 0 && yIncr < 0) {
-    		directionKey = "North";
-    	}
-    	if (xIncr < 0 && yIncr < 0) {
-    		directionKey = "NorthWest";
-    	}
-    	if (xIncr < 0 && yIncr == 0) {
-    		directionKey = "West";
-    	}
-    	if (xIncr < 0 && yIncr > 0) {
-    		directionKey = "SouthWest";
-    	}
-    	
+    	//Current State
+    	setDirection();
     	g.drawImage(pics[picNum][direction.get(directionKey)], xloc, yloc, Color.gray, this);
-    	
-    	xloc += xIncr;
-    	yloc += yIncr;
+    	//Next State
+    	setNextVelocity();
+    	setNextLoc();
 
     	// TODO: Keep the orc from walking off-screen, turn around when bouncing off walls.
 	//Be sure that animation picture direction matches what is happening on screen.
