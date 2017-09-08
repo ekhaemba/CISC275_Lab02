@@ -1,11 +1,16 @@
 //T Harvey
 //based loosely on http://www.java2s.com/Code/JavaAPI/java.awt/GraphicsdrawImageImageimgintxintyImageObserverob.htm
  
+// Elton Mwale, William Ransom
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -23,11 +28,12 @@ public class Animation extends JPanel {
     final static int frameHeight = 300;
     final static int imgWidth = 165;
     final static int imgHeight = 165;
-    int direction;
+    Map<String, Integer> direction = new HashMap<String, Integer>();
+    String directionKey;
+    
 
     //Override this JPanel's paint method to cycle through picture array and draw images
     public void paint(Graphics g) {
-    	g.drawImage(pics[picNum][direction], xloc, yloc, Color.gray, this);
     	
     	picNum = (picNum + 1) % frameCount;
     	
@@ -39,30 +45,32 @@ public class Animation extends JPanel {
     	}
     	
     	if (xIncr == 0 && yIncr > 0) {
-    		direction = 0;
+    		directionKey = "South";
     	}
     	if (xIncr > 0 && yIncr > 0) {
-    		direction = 1;
+    		directionKey = "SouthEast";
     	}
     	if (xIncr > 0 && yIncr == 0) {
-    		direction = 2;
+    		directionKey = "East";
     	}
     	if (xIncr > 0 && yIncr < 0) {
-    		direction = 3;
+    		directionKey = "NorthEast";
     	}
     	if (xIncr == 0 && yIncr < 0) {
-    		direction = 4;
+    		directionKey = "North";
     	}
     	if (xIncr < 0 && yIncr < 0) {
-    		direction = 5;
+    		directionKey = "NorthWest";
     	}
     	if (xIncr < 0 && yIncr == 0) {
-    		direction = 6;
+    		directionKey = "West";
     	}
     	if (xIncr < 0 && yIncr > 0) {
-    		direction = 7;
+    		directionKey = "SouthWest";
     	}
-    		
+    	
+    	g.drawImage(pics[picNum][direction.get(directionKey)], xloc, yloc, Color.gray, this);
+    	
     	xloc += xIncr;
     	yloc += yIncr;
 
@@ -72,7 +80,7 @@ public class Animation extends JPanel {
 
     //Make frame, loop on repaint and wait
     public static void main(String[] args) {
-    	JFrame frame = new JFrame();
+      	JFrame frame = new JFrame();
     	frame.getContentPane().add(new Animation());
     	frame.setBackground(Color.gray);
     	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -80,7 +88,7 @@ public class Animation extends JPanel {
     	frame.setVisible(true);
     	for(int i = 0; i < 1000; i++){
     		frame.repaint();
-    		try {
+   		try {
     			Thread.sleep(100);
     		} catch (InterruptedException e) {
     			e.printStackTrace();
@@ -88,8 +96,16 @@ public class Animation extends JPanel {
     	}
     }
 
-    //Constructor: get image, segment and store in array
+	//Constructor: get image, segment and store in array
     public Animation(){
+    	direction.put("South", 0);
+    	direction.put("SouthEast", 1);
+    	direction.put("East", 2);
+    	direction.put("NorthEast", 3);
+    	direction.put("North", 4);
+    	direction.put("NorthWest", 5);
+    	direction.put("West", 6);
+    	direction.put("SouthWest", 7);
     	String[] paths = {"images/orc/orc_forward_south.png", 
     			"images/orc/orc_forward_southeast.png", 
     			"images/orc/orc_forward_east.png",
