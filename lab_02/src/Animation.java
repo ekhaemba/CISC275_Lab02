@@ -8,7 +8,9 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -18,7 +20,9 @@ import javax.swing.JPanel;
 
 public class Animation extends JPanel {
 
+	//Velocity enumerated type
 	enum Velocity { UNDEF, NEGATIVE, ZERO, POSITIVE }
+	static List<Orc> orcList = new ArrayList<Orc>();
     final int frameCount = 10;
     int picNum = 0;
     BufferedImage[][]pics;
@@ -35,8 +39,8 @@ public class Animation extends JPanel {
     Velocity xVel = Velocity.UNDEF;
     Velocity yVel = Velocity.UNDEF;
     
-    //Override this JPanel's paint method to cycle through picture array and draw images
-    private void setDirection() {
+    //Sets the direction based off of the enumerated types
+    /*private void setDirection() {
 		if (xVel == Velocity.ZERO && yVel == Velocity.POSITIVE) {
 			directionKey = "South";
 		}
@@ -61,7 +65,9 @@ public class Animation extends JPanel {
 		if (xVel == Velocity.NEGATIVE && yVel == Velocity.POSITIVE) {
 			directionKey = "SouthWest";
 		}
-    }
+    }*/
+    
+    //Sets the initial velocity enum based on the velocity value given
     private Velocity setInitialVel(int vel) {
     		if(vel == 0) {
     			return Velocity.ZERO;
@@ -74,6 +80,7 @@ public class Animation extends JPanel {
     		}
     }
     
+    //returns the next incr value dependent on the enum type
     private int getVelocityVal(Velocity v, int velVal) {
     		switch(v) {
 			case POSITIVE:
@@ -100,46 +107,47 @@ public class Animation extends JPanel {
 		    	}
 	    	}
     }
-    //Sets the next location of the orc
-    private void setNextLoc() {
-    		xloc += getVelocityVal(xVel,xIncr);
-    		yloc += getVelocityVal(yVel,yIncr);
-    }
+    //Override this JPanel's paint method to cycle through picture array and draw images
     public void paint(Graphics g) {
-    	
-    	//Initial State
-    	if(xVel == Velocity.UNDEF && yVel == Velocity.UNDEF) {
-    		xVel = setInitialVel(xIncr);
-    		yVel = setInitialVel(yIncr);
-    	}
-    	picNum = (picNum + 1) % frameCount;
-    	//Current State
-    	setDirection();
-    	g.drawImage(pics[picNum][direction.get(directionKey)], xloc, yloc, Color.gray, this);
-    	//Next State
-    	setNextVelocity();
-    	setNextLoc();
-
-    	// TODO: Keep the orc from walking off-screen, turn around when bouncing off walls.
-	//Be sure that animation picture direction matches what is happening on screen.
+	    	picNum = (picNum + 1) % frameCount;
+	    	for(Orc orc: orcList) {
+	    		g.drawImage(pics[picNum][direction.get(orc.getDirection())], orc.getX(), orc.getY(), Color.gray, this);
+	    	}
     }
-
+    public static void tick() {
+    		for(Orc thisOrc : orcList) {
+    			int nextx = thisOrc.getNextXLoc();
+    			int nexty = thisOrc.getNextYLoc();
+    			System.out.println(thisOrc.getX()+ ","+thisOrc.getY());
+    			if(nextx < 0 || nextx + imgHeight > frameWidth) {
+    				thisOrc.setxComp(-thisOrc.getxComp());
+    			}
+    			if(nexty < 0 || nexty + imgHeight > frameWidth) {
+    				thisOrc.setyComp(-thisOrc.getyComp());
+    			}
+    			thisOrc.setX(thisOrc.getNextXLoc());
+    			thisOrc.setY(thisOrc.getNextYLoc());
+    		}
+    }
     //Make frame, loop on repaint and wait
     public static void main(String[] args) {
       	JFrame frame = new JFrame();
-    	frame.getContentPane().add(new Animation());
-    	frame.setBackground(Color.gray);
-    	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    	frame.setSize(frameWidth, frameHeight);
-    	frame.setVisible(true);
-    	for(int i = 0; i < 1000; i++){
-    		frame.repaint();
-   		try {
-    			Thread.sleep(100);
-    		} catch (InterruptedException e) {
-    			e.printStackTrace();
-    		}
-    	}
+	    	frame.getContentPane().add(new Animation());
+	    	frame.setBackground(Color.gray);
+	    	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    	frame.setSize(frameWidth, frameHeight);
+	    	frame.setVisible(true);
+	    	//Initial State
+	    	orcList.add(new Orc(8,4));
+	    	for(int i = 0; i < 1000; i++){
+	    		frame.repaint();
+	    		tick();
+	   		try {
+	    			Thread.sleep(100);
+	    		} catch (InterruptedException e) {
+	    			e.printStackTrace();
+	    		}
+	    	}
     }
 
 	//Constructor: get image, segment and store in array
